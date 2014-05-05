@@ -21,8 +21,15 @@ def main():
         for fname in fnmatch.filter(filenames, '*.mp3'):
             musList.append(os.path.join(root, fname))
 
+    player = pyglet.media.Player()
+    window = playerWindow(player)
+
     for index in range(0, len(musList)):
-        print musList[index]
+        source = pyglet.media.load(str(musList[index]))
+        player.queue(source)
+        window.gui_update_source() # next function to decode is this one, still now not written
+        window.set_visible(True)
+
 
     # TODO: Create the function to read the music library
 
@@ -46,7 +53,23 @@ class playerWindow(pyglet.window.Window):
         self.playPauseBtn.width = 45
         self.playPauseBtn.on_press = self.on_playPause
 
-        win = self
+        # win = self    # removing the fullscreen function as of now
+        self.controls = [self.playPauseBtn] # add the slider button later
+
+    def on_playPause(self):
+        if self.player.playing:
+            self.player.pause()
+        else:
+            if self.player.time >= self.player.source.duration:
+                self.player.seek(0)
+            self.player.play()
+        self.gui_update_state()
+
+    def gui_update_state(self):
+        if self.player.playing:
+            self.playPauseBtn.text = 'Pause'
+        else:
+            self.playPauseBtn.text = 'Play'
 
 if __name__ == '__main__':
     main()
